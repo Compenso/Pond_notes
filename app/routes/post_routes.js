@@ -3,7 +3,7 @@ const express = require('express')
 // Passport docs: http://www.passportjs.org/docs/
 const passport = require('passport')
 
-// pull in Mongoose model for examples
+// pull in Mongoose model for a post
 const Post = require('../models/post')
 
 // this is a collection of methods that help us detect situations when we need
@@ -27,13 +27,13 @@ const requireToken = passport.authenticate('bearer', { session: false })
 // instantiate a router (mini app that only handles routes)
 const router = express.Router()
 
-// require in our user model
-const User = require('./../models/user')
 // INDEX
-// GET /examples
+// GET /post
 router.get('/post', requireToken, (req, res, next) => {
-  User.find()
+  console.log('we are in the index route', Post)
+  Post.find()
     .then(posts => {
+      console.log(posts)
       // `posts` will be an array of Mongoose documents
       // we want to convert each one to a POJO, so we use `.map` to
       // apply `.toObject` to each one
@@ -46,7 +46,7 @@ router.get('/post', requireToken, (req, res, next) => {
 })
 
 // SHOW
-// GET /examples/5a7db6c74d55bc51bdf39793
+// GET /post/5a7db6c74d55bc51bdf39793
 router.get('/post/:id', requireToken, (req, res, next) => {
   // req.params.id will be set based on the `:id` in the route
   Post.findById(req.params.id)
@@ -58,13 +58,13 @@ router.get('/post/:id', requireToken, (req, res, next) => {
 })
 
 // CREATE
-// POST /examples
+// POST /post
 router.post('/post', requireToken, (req, res, next) => {
-  // set owner of new example to be current user
+  // set owner of new post to be current user
   req.body.post.owner = req.user.id
 
   Post.create(req.body.post)
-    // respond to succesful `create` with status 201 and JSON of new "example"
+    // respond to succesful `create` with status 201 and JSON of new "post"
     .then(post => {
       res.status(201).json({ post: post.toObject() })
     })
@@ -75,11 +75,11 @@ router.post('/post', requireToken, (req, res, next) => {
 })
 
 // UPDATE
-// PATCH /examples/5a7db6c74d55bc51bdf39793
+// PATCH /post/5a7db6c74d55bc51bdf39793
 router.patch('/post/:id', requireToken, removeBlanks, (req, res, next) => {
   // if the client attempts to change the `owner` property by including a new
   // owner, prevent that by deleting that key/value pair
-  delete req.body.example.owner
+  delete req.body.post.owner
 
   Post.findById(req.params.id)
     .then(handle404)
@@ -98,14 +98,14 @@ router.patch('/post/:id', requireToken, removeBlanks, (req, res, next) => {
 })
 
 // DESTROY
-// DELETE /examples/5a7db6c74d55bc51bdf39793
+// DELETE /post/5a7db6c74d55bc51bdf39793
 router.delete('/post/:id', requireToken, (req, res, next) => {
   Post.findById(req.params.id)
     .then(handle404)
     .then(post => {
-      // throw an error if current user doesn't own `example`
+      // throw an error if current user doesn't own `posts`
       requireOwnership(req, post)
-      // delete the example ONLY IF the above didn't throw
+      // delete the post ONLY IF the above didn't throw
       post.deleteOne()
     })
     // send back 204 and no content if the deletion succeeded
