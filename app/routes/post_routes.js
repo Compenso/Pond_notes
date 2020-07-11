@@ -30,7 +30,6 @@ const requireToken = passport.authenticate('bearer', { session: false })
 // INDEX
 // GET /post
 router.get('/post', requireToken, (req, res, next) => {
-  console.log('we are in the index route', Post)
   Post.find()
     .then(posts => {
       console.log(posts)
